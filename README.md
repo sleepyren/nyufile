@@ -16,4 +16,4 @@ Usage: ./nyufile disk <options>
 
 -r filename [-s sha1]  Recover a contiguous file.
 
---from Professor Yang Tang's Operating Systems Course @ New York University
+#from Professor Yang Tang's Operating Systems Course @ New York University
