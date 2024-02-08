@@ -11,6 +11,7 @@ This is Microsoft FAT32 Spec Document. All FAT32 fields are referenced from ther
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
+#include <string.h>
 
 #pragma pack(push,1)
 typedef struct BootEntry {
@@ -44,34 +45,98 @@ typedef struct BootEntry {
 } BootEntry;
 #pragma pack(pop)
 
+
+
+#pragma pack(push,1)
+typedef struct DirEntry {
+  unsigned char  DIR_Name[11];      // File name
+  unsigned char  DIR_Attr;          // File attributes
+  unsigned char  DIR_NTRes;         // Reserved
+  unsigned char  DIR_CrtTimeTenth;  // Created time (tenths of second)
+  unsigned short DIR_CrtTime;       // Created time (hours, minutes, seconds)
+  unsigned short DIR_CrtDate;       // Created day
+  unsigned short DIR_LstAccDate;    // Accessed day
+  unsigned short DIR_FstClusHI;     // High 2 bytes of the first cluster address
+  unsigned short DIR_WrtTime;       // Written time (hours, minutes, seconds
+  unsigned short DIR_WrtDate;       // Written day
+  unsigned short DIR_FstClusLO;     // Low 2 bytes of the first cluster address
+  unsigned int   DIR_FileSize;      // File size in bytes. (0 for directories)
+} DirEntry;
+#pragma pack(pop)
+
+
+
 void invalidUsage();
-void optionExecute(unsigned char optionConfiguration, int fd);
+void optionExecute(unsigned char optionConfiguration, int fd, char *recoveredFileName);
 void printSystemInfo(int fd);
 void printRootDirectory(int fd);
 void formatFileName(char *directoryEntry, char *formatted_string);
-void recoverSmallFile(char *directoryEntry, char *fileName);
+void recoverSmallFile(int fd, char *fileName);
 
-void printDirectoryEntry(char *entry)
+void printDirectoryEntry(DirEntry *entry)
 {
 //DIR_FstClusHI = byte 20 (2 bytes)
             //DIR_FstClusLO = byte 26 (2 bytes)
-            unsigned int clusterNumber = entry[26] | entry[27] << 8 |
-            entry[20] << 16 | entry[21] << 24;
+           // unsigned int clusterNumber = entry[26] | entry[27] << 8 | entry[20] << 16 | entry[21] << 24;
+            unsigned int clusterNumber = entry->DIR_FstClusLO | entry->DIR_FstClusHI << 16;
 
             //DIR_FileSize = byte 28 (4 bytes)
-            unsigned int fileSize = entry[28] | entry[29] << 8 |
-             entry[30] << 16 | entry[31] << 24;
-           
-            char isDirectory = entry[11] & 0x10;
+            //unsigned int fileSize = entry[28] | entry[29] << 8 | entry[30] << 16 | entry[31] << 24;
+            unsigned int fileSize = entry->DIR_FileSize;
+
+             //char isDirectory = entry[11] & 0x10;
+            char isDirectory = entry->DIR_Attr & 0x10;
 
             char formatted_string[12]={0};
-            formatFileName(entry, formatted_string);
+            formatFileName( (char *) entry, formatted_string);
            //printf("%.11s/  \nstarting cluster: %u\nsize: %u \n\n", entry + i, clusterNumber, fileSize); 
             printf("%.11s \nstarting cluster: %u\nsize: %u \n\n", formatted_string, clusterNumber, fileSize); 
 }
 
-void recoverSmallFile(char *directoryEntry, char *fileName)
+void recoverSmallFile(int fd, char *fileName)
 {
+
+    BootEntry *map = (BootEntry *) mmap(NULL, 90, PROT_READ | PROT_WRITE, MAP_SHARED, fd,0);
+
+    
+    unsigned int startingByte = map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt + map->BPB_NumFATs * map->BPB_FATSz32 * \
+     map->BPB_BytsPerSec + ((map->BPB_RootClus - 2) 
+     * map->BPB_BytsPerSec * map->BPB_SecPerClus);
+
+    unsigned int *FAT =  (unsigned int *) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
+     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
+
+    unsigned int currCluster = map->BPB_RootClus;
+    
+
+
+while (currCluster < 0x0FFFFFF8)
+{
+//for each page in the root directory check all deleted directory elements
+        unsigned char *directoryPage = mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec \
+        , PROT_READ | PROT_WRITE, MAP_SHARED, fd, startingByte + (currCluster - 2) * map->BPB_BytsPerSec * map->BPB_SecPerClus);
+
+for (int i = 0; i < map->BPB_FATSz32 * map->BPB_BytsPerSec; i += 32)
+        {
+            if (directoryPage[i] != 0xe5) continue;
+
+            char formattedDirectoryName[12] = {0};
+            formatFileName(&directoryPage[i], formattedDirectoryName);
+            if (strcmp(formattedDirectoryName + 1, fileName + 1) == 0)
+                    {printf("file successfully recovered");
+                    directoryPage[i] = fileName[0];
+                    printf("\n dPage0 0x%02x", directoryPage[i]);
+                    }
+            
+                
+        }
+        munmap(directoryPage, map->BPB_FATSz32 * map->BPB_BytsPerSec);
+        currCluster = FAT[currCluster];
+}
+
+munmap(FAT,map->BPB_FATSz32 * map->BPB_BytsPerSec);
+munmap(map, 90);
+
 
 }
 
@@ -95,11 +160,12 @@ void formatFileName(char *directoryEntry, char *formatted_string)
 
 }
 
-void optionExecute(unsigned char optionConfiguration, int fd)
+void optionExecute(unsigned char optionConfiguration, int fd, char *recoveredFileName)
 {
  //printf("optionConfiguration = 0x%02x\n", optionConfiguration);
 if (optionConfiguration == 0x1) printSystemInfo(fd);
 if (optionConfiguration == 0x2) printRootDirectory(fd);
+if (optionConfiguration == 0x4) recoverSmallFile(fd, recoveredFileName);
 }
 
 void invalidUsage()
@@ -160,17 +226,18 @@ void printRootDirectory(int fd)
      * map->BPB_BytsPerSec * map->BPB_SecPerClus);
 
 
-    //This new map is the FAT region
-    unsigned char *FAT = (unsigned char*) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
-     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
+
     
+    //unsigned char *FAT = (unsigned char*) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
+     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
+    unsigned int *FAT =  (unsigned int *) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
+     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
 
     unsigned int currCluster = map->BPB_RootClus;
     int numberOfEntries = 0;
 
     while (currCluster < 0x0FFFFFF8) // >= 0x0FFFFFF8 is End of Cluster mark
     {
-     //printf("currCluster : %u ", currCluster);
 
         //for each page in the root directory print all valid directory elements
         unsigned char *directoryPage = mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec \
@@ -179,7 +246,7 @@ void printRootDirectory(int fd)
 
         for (int i = 0; i < map->BPB_BytsPerSec * map->BPB_SecPerClus; i += 32)
         {
-
+        
             //If DIR_Name[0] == 0xE5, then the directory entry is free 
             //DIR_NAME[11] lower 4 bits one (0x0F) means that this directory entry belongs to a LFN (Long File Name) entry
             //which we will not be dealing with in this version
@@ -190,15 +257,19 @@ void printRootDirectory(int fd)
             if (directoryPage[i] == 0x00) break;
 
 
-            printDirectoryEntry(&directoryPage[i]);
+            printDirectoryEntry( (DirEntry *) &directoryPage[i]);
+            numberOfEntries++;
             //•	If DIR_Name[0] == 0x05, then the actual file name character for this byte is 0xE5. \
             0xE5 is actually a valid KANJI lead byte value for the character set used in Japan.
 
         }
+        printf("number of entries: %d\n", numberOfEntries);
         munmap(directoryPage, map->BPB_FATSz32 * map->BPB_BytsPerSec);
-        currCluster = FAT[currCluster*4] | FAT[currCluster*4+1] << 8 | FAT[currCluster*4+2] << 16 | FAT[currCluster*4+3] << 24 ;
-        //currCluster = FAT[currCluster*4];
+        
+        //currCluster = FAT[currCluster*4] | FAT[currCluster*4+1] << 8 | FAT[currCluster*4+2] << 16 | FAT[currCluster*4+3] << 24 ;
+        currCluster = FAT[currCluster];
     }
+
     munmap(FAT, map->BPB_FATSz32 * map->BPB_BytsPerSec);
     munmap(map, 90);
 
@@ -266,10 +337,17 @@ int main(int argc, int **argv) {
 
     }
 
+    /*
     if (optionConfiguration != 0x1 && optionConfiguration != 0x2 && optionConfiguration != 0x4 && optionConfiguration\
     != 0x14 && optionConfiguration != 0x18) invalidUsage();
     else
-    optionExecute(optionConfiguration, fd);
+    optionExecute(optionConfiguration, fd, NULL);
+    */
+
+    if (optionConfiguration == 0x1 || optionConfiguration == 0x2) optionExecute(optionConfiguration, fd, NULL);
+    else if (optionConfiguration == 0x4) optionExecute(optionConfiguration, fd, filePath);
+    else if (optionConfiguration == 0x14 || optionConfiguration == 0x18) printf("not implemented yet");
+    else invalidUsage();
 
 
     close(fd);
