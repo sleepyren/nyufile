@@ -1,13 +1,27 @@
-#include <sys/mman.h>
+/* written by Renaldo Hyacinthe
+for Dr. Yang Tang's Operating Systems course
+at NYU
+
+https://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/fatgen103.doc
+This is Microsoft FAT32 Spec Document. All FAT32 fields are referenced from there.
+
+references:
+ https://www.openssl.org/docs/man1.0.2/man3/sha.html */#include <sys/mman.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/sha.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-void printSystemInfo(int fd);
-void printRootDirectory(int fd);
-void formatFileName(char *directoryEntry, char *formatted_string);
-void recoverSmallFile(int fd, char *fileName);
 
+#define SHA_DIGEST_LENGTH 20
+
+//FOR WHEN the file is NULL or essentially fileSize == 0
+extern unsigned char SHA1_NULL[];
+
+//The OpenSSL library provides a function SHA1(), which computes the \
+SHA-1 hash of d[0...n-1] and stores the result in md[0...SHA_DIGEST_LENGTH-1]: 
 
 #pragma pack(push,1)
 typedef struct BootEntry {
@@ -58,3 +72,11 @@ typedef struct DirEntry {
   unsigned int   DIR_FileSize;      // File size in bytes. (0 for directories)
 } DirEntry;
 #pragma pack(pop)
+
+void printSystemInfo(int fd);
+void printRootDirectory(int fd);
+void formatFileName(char *directoryEntry, char *formatted_string);
+void recoverSmallFile(int fd, char *fileName, char *stringHex);
+int areHashesEqual(unsigned char *disk, DirEntry *directory, unsigned char hash[]);
+unsigned char *stringHexToRealHex(char *string, unsigned char *buffer);
+

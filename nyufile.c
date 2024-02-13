@@ -7,14 +7,18 @@ https://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f345
 This is Microsoft FAT32 Spec Document. All FAT32 fields are referenced from there.
 */
 
-#include <unistd.h>
 #include <sys/fcntl.h>
 #include "procedure.h"
 
+//NOTE : You need to add the compiler option -l crypto to link with the OpenSSL library. 
 
 
 void invalidUsage();
 void optionExecute(unsigned char optionConfiguration, int fd, char *recoveredFileName);
+
+
+    char *filePath;
+    char *sha1Hash;
 
 
 void optionExecute(unsigned char optionConfiguration, int fd, char *recoveredFileName)
@@ -22,7 +26,8 @@ void optionExecute(unsigned char optionConfiguration, int fd, char *recoveredFil
  //printf("optionConfiguration = 0x%02x\n", optionConfiguration);
 if (optionConfiguration == 0x1) printSystemInfo(fd);
 if (optionConfiguration == 0x2) printRootDirectory(fd);
-if (optionConfiguration == 0x4) recoverSmallFile(fd, recoveredFileName);
+if (optionConfiguration == 0x4) recoverSmallFile(fd, recoveredFileName,NULL);
+if (optionConfiguration == 0x14) recoverSmallFile(fd, recoveredFileName, sha1Hash);
 }
 
 void invalidUsage()
@@ -64,17 +69,14 @@ printf("File System Information\nNumber of FATs: 0x%02x\nBytes per Sector: \
 
 int main(int argc, int **argv) {
 
-
     //getopt usage: https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html
     extern char *optarg;
     extern int optind; //This variable is set by getopt to the index of the next element of the argv array to be processed. 
     extern int opterr;
     opterr = 0; //setting the err value to 0 because i do not want the getopt automated err message
     optind = 2; //i want to skip the diskname in the getopt process
-    int option;
 
-    char *filePath;
-    char *sha1Hash;
+    int option;
 
     unsigned char optionConfiguration = 0x0;
     //bit 0 ->  -i Print the file system information.
@@ -131,7 +133,8 @@ int main(int argc, int **argv) {
 
     if (optionConfiguration == 0x1 || optionConfiguration == 0x2) optionExecute(optionConfiguration, fd, NULL);
     else if (optionConfiguration == 0x4) optionExecute(optionConfiguration, fd, filePath);
-    else if (optionConfiguration == 0x14 || optionConfiguration == 0x18) printf("not implemented yet");
+    else if (optionConfiguration == 0x14 ) optionExecute(optionConfiguration, fd, filePath);
+    else if (optionConfiguration == 0x18) printf("not implemented yet");
     else invalidUsage();
 
 
