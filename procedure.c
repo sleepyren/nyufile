@@ -111,8 +111,7 @@ unsigned int startingByte = map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt + map->BP
     for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
         if (temphash[i]!=hash[i]) return -1;
     
-    //unsigned int *FAT =  (unsigned int *) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
-     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
+
      printf("Hash match found\n");
     return 1;
 }
@@ -123,7 +122,6 @@ void printDirectoryEntry(DirEntry *entry)
 {
 //DIR_FstClusHI = byte 20 (2 bytes)
             //DIR_FstClusLO = byte 26 (2 bytes)
-           // unsigned int clusterNumber = entry[26] | entry[27] << 8 | entry[20] << 16 | entry[21] << 24;
             unsigned int clusterNumber = entry->DIR_FstClusLO | entry->DIR_FstClusHI << 16;
 
             //DIR_FileSize = byte 28 (4 bytes)
@@ -183,8 +181,6 @@ void recoverSmallFile(int fd, char *fileName, char *stringHex)
      map->BPB_BytsPerSec + ((map->BPB_RootClus - 2) 
      * map->BPB_BytsPerSec * map->BPB_SecPerClus);
 
-    //unsigned int *FAT =  (unsigned int *) mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec, PROT_READ, MAP_PRIVATE, fd, \
-     map->BPB_BytsPerSec *  map->BPB_RsvdSecCnt);
      unsigned char *FATBegin = disk + map->BPB_BytsPerSec * map->BPB_RsvdSecCnt;
     unsigned int *FAT = (unsigned int *) FATBegin;
 
@@ -195,8 +191,6 @@ while (currCluster < 0x0FFFFFF8)
 {
 //for each page in the root directory check all deleted directory elements
 
-       // unsigned char *directoryPage = mmap(NULL, map->BPB_FATSz32 * map->BPB_BytsPerSec \
-        , PROT_READ | PROT_WRITE, MAP_SHARED, fd, startingByte + (currCluster - 2) * map->BPB_BytsPerSec * map->BPB_SecPerClus);
         unsigned char *directoryPage = disk + startingByte + (currCluster - 2) * map->BPB_BytsPerSec * map->BPB_SecPerClus;
 //if two elements match the provided filename, exit because this is file recovery request is\
 too ambiguous to process
@@ -318,7 +312,7 @@ void printRootDirectory(int fd)
         printf("number of entries: %d\n", numberOfEntries);
         munmap(directoryPage, map->BPB_FATSz32 * map->BPB_BytsPerSec);
         
-        //currCluster = FAT[currCluster*4] | FAT[currCluster*4+1] << 8 | FAT[currCluster*4+2] << 16 | FAT[currCluster*4+3] << 24 ;
+
         currCluster = FAT[currCluster];
     }
 

@@ -35,8 +35,7 @@ void invalidUsage()
     fprintf(stderr, "Usage: ./nyufile disk <options>\n"
   "-i                     Print the file system information.\n"
   "-l                     List the root directory.\n"
-  "-r filename [-s sha1]  Recover a contiguous file.\n"
-  "-R filename -s sha1    Recover a possibly non-contiguous file.\n");
+  "-r filename [-s sha1]  Recover a contiguous file.\n");
         exit(1);
 }
 
