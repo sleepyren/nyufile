@@ -31,7 +31,31 @@ Usage: ./nyufile disk <options>
 
 -r    filename [-s sha1]  Recover a contiguous file.
 
+To Use:
+
 To build ```make```
+
+Note: It is recommended to run this tool in a virtualized environment such as a Linux Docker image due to its nature. My professor has provided one with this linuxKit image
+```docker pull ytang/os``` which is what this was developed with.
+
+your current directory will be placed in /cs202/ any changes outside of cs202 will not be reflected
+
+To create a small FAT32 disk for program testing 
+
+
+On Linux, /dev/zero is a special file that provides as many \0 as are read from it. The dd command performs low-level copying of raw data. Therefore, you can use it to generate an arbitrary-size file full of zeros. 
+
+This will create a 256KB empty file named fat32.disk:
+dd if=/dev/zero of=fat32.disk bs=256k count=1
+
+Format the disk with FAT32:
+mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
+
+
+To use the FAT32 disk as if it were on your computer's file system mount it to a point
+```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
+
+
 
 
 
