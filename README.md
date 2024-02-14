@@ -5,13 +5,13 @@ FAT32 has been around for over 25 years. Because of its simplicity, it is the mo
 
 Have you ever accidentally deleted a file? Do you know that it could be recovered? In this lab, you will build a FAT32 file recovery tool called Need You to Undelete my FILE, or nyufile for short.
 
-Milestone 1: validate usage. \n
-Milestone 2: print the file system information. \n
-Milestone 3: list the root directory. \n
-Milestone 4: recover a small file. \n
-Milestone 5: recover a large contiguously-allocated file. \n
-Milestone 6: detect ambiguous file recovery requests. \n
-Milestone 7: recover a contiguously-allocated file with SHA-1 hash. \n
+Milestone 1: validate usage. <br>
+Milestone 2: print the file system information. <br>
+Milestone 3: list the root directory. <br>
+Milestone 4: recover a small file. <br>
+Milestone 5: recover a large contiguously-allocated file. <br>
+Milestone 6: detect ambiguous file recovery requests. <br>
+Milestone 7: recover a contiguously-allocated file with SHA-1 hash. <br>
 
 Multiple files whose names differ only in the first character would end up having the same name when deleted. Therefore, you may encounter more than one deleted directory entry matching the given filename. When that happens, your program should print filename: multiple candidates found (replace filename with the actual file name) and abort. 
 To solve the aforementioned ambiguity, the user can provide a SHA-1 hash via command-line option -s sha1 to help identify which deleted directory entry should be the target file.
@@ -25,15 +25,15 @@ This tool only works with FAT32 file systems and does not take LFN (Long File Na
 # Usage
 
 Usage: ./nyufile disk <options>
-
+<br>
 -i    Print the file system information.
-
+<br>
 -l    List the root directory.
-
+<br>
 -r    filename [-s sha1]  Recover a contiguous file.
-
+<br>
 To Use:
-
+<br>
 To build ```make```
 
 Note: It is recommended to run this tool in a virtualized environment such as a Linux Docker image due to its nature. My professor has provided one with this linuxKit image
@@ -53,6 +53,7 @@ Format the disk with FAT32:
 mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
 <img src="images/initializeDisk.png" style="height: 200px; object-fit: contain">
 
+create mounting point ```mkdir /mnt/disk```
 To use the FAT32 disk as if it were on your computer's file system mount it to a point
 ```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
 
@@ -60,11 +61,11 @@ To use the FAT32 disk as if it were on your computer's file system mount it to a
 
 These are the contents of the MICRO.TXT file so you can test the SHA1 yourself
 
-<img src="images/MicroFileContents.png" style="height: 150px; object-fit: contain">
+<img src="images/MicroFileContents.png" style="height: 250px; object-fit: contain">
 
 
 #Program in Use
-<img src="images/testingFuncs.png" style="height: 150px; object-fit: contain">
+<img src="images/testingFuncs.png" style="height: 200px; object-fit: contain">
 
 
 <img src="images/hashMatchFound.png" style="height: 100px; object-fit: contain">
