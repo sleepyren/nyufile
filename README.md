@@ -39,6 +39,7 @@ To build ```make```
 Note: It is recommended to run this tool in a virtualized environment such as a Linux Docker image due to its nature. My professor has provided one with this linuxKit image
 ```docker pull ytang/os``` which is what this was developed with.
 
+do ```docker run -r -name cs202 -t --privileged -rm -v /CHOOSE_DIRECTORY:/cs202 -w /cs202 ytang/os bash```
 your current directory will be placed in /cs202/ any changes outside of cs202 will not be reflected
 
 To create a small FAT32 disk for program testing 
