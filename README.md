@@ -56,7 +56,7 @@ mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
 To use the FAT32 disk as if it were on your computer's file system mount it to a point
 ```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
 
-<img src="images/editDisk.png" style="max-width: 10%; max-height: 50px;">
+<img src="images/editDisk.png" style="height: 200px; object-fit: contain">
 
 
 
