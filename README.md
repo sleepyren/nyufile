@@ -52,6 +52,7 @@ dd if=/dev/zero of=fat32.disk bs=256k count=1
 
 Format the disk with FAT32:
 mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
+Note: Ignore the Warning
 <img src="images/initializeDisk.png" style="height: 200px; object-fit: contain">
 
 create mounting point ```mkdir /mnt/disk```
