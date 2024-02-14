@@ -58,10 +58,15 @@ To use the FAT32 disk as if it were on your computer's file system mount it to a
 
 <img src="images/editDisk.png" style="height: 200px; object-fit: contain">
 
+These are the contents of the MICRO.TXT file so you can test the SHA1 yourself
 
 
 
+<img src="images/testingFuncs.png" style="height: 200px; object-fit: contain">
 
+
+#Program in Use
+<img src="images/hashMatchFound.png" style="height: 200px; object-fit: contain">
 
 
 #from Professor Yang Tang's Operating Systems Course @ New York University
