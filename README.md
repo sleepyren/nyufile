@@ -51,7 +51,7 @@ dd if=/dev/zero of=fat32.disk bs=256k count=1
 
 Format the disk with FAT32:
 mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
-<img src="images/initializeDisk" width="300" height="200">
+<img src="images/initializeDisk.png" width="300" height="200">
 
 To use the FAT32 disk as if it were on your computer's file system mount it to a point
 ```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
