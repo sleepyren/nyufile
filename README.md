@@ -64,7 +64,7 @@ These are the contents of the MICRO.TXT file so you can test the SHA1 yourself
 <img src="images/MicroFileContents.png" style="height: 250px; object-fit: contain">
 
 
-#Program in Use
+#Program in Use<br><br>
 <img src="images/testingFuncs.png" style="height: 200px; object-fit: contain">
 
 
