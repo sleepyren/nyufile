@@ -71,4 +71,4 @@ These are the contents of the MICRO.TXT file so you can test the SHA1 yourself
 <img src="images/hashMatchFound.png" style="height: 100px; object-fit: contain">
 
 
-#from Professor Yang Tang's Operating Systems Course @ New York University
+# from Professor Yang Tang's Operating Systems Course @ New York University
