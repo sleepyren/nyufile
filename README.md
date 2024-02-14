@@ -5,13 +5,13 @@ FAT32 has been around for over 25 years. Because of its simplicity, it is the mo
 
 Have you ever accidentally deleted a file? Do you know that it could be recovered? In this lab, you will build a FAT32 file recovery tool called Need You to Undelete my FILE, or nyufile for short.
 
-Milestone 1: validate usage. 
-Milestone 2: print the file system information. 
-Milestone 3: list the root directory. 
-Milestone 4: recover a small file.
-Milestone 5: recover a large contiguously-allocated file.
-Milestone 6: detect ambiguous file recovery requests.
-Milestone 7: recover a contiguously-allocated file with SHA-1 hash.
+Milestone 1: validate usage. \n
+Milestone 2: print the file system information. \n
+Milestone 3: list the root directory. \n
+Milestone 4: recover a small file. \n
+Milestone 5: recover a large contiguously-allocated file. \n
+Milestone 6: detect ambiguous file recovery requests. \n
+Milestone 7: recover a contiguously-allocated file with SHA-1 hash. \n
 
 Multiple files whose names differ only in the first character would end up having the same name when deleted. Therefore, you may encounter more than one deleted directory entry matching the given filename. When that happens, your program should print filename: multiple candidates found (replace filename with the actual file name) and abort. 
 To solve the aforementioned ambiguity, the user can provide a SHA-1 hash via command-line option -s sha1 to help identify which deleted directory entry should be the target file.
@@ -51,7 +51,7 @@ dd if=/dev/zero of=fat32.disk bs=256k count=1
 
 Format the disk with FAT32:
 mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
-<img src="images/initializeDisk.png" style="max-width: 10%; max-height: 50px;">
+<img src="images/initializeDisk.png" style="height: 80px; object-fit: contain">
 
 To use the FAT32 disk as if it were on your computer's file system mount it to a point
 ```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
