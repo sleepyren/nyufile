@@ -1,8 +1,5 @@
 # nyufile
-![Screenshot 2024-02-13 at 8 24 17 PM](https://github.com/sleepyren/nyufile/assets/96728203/aaacc91f-cdd1-434f-b5a3-5a4e0c269fbe)
 
-
-![Screenshot 2024-02-13 at 8 25 57 PM](https://github.com/sleepyren/nyufile/assets/96728203/ddf8b503-d1a9-4327-9ff7-e641a1cdf370)
 
 FAT32 has been around for over 25 years. Because of its simplicity, it is the most widely compatible file system. Although recent computers have adopted newer file systems, FAT32 (and its variant, exFAT) is still dominant in SD cards and USB flash drives due to its compatibility.
 
@@ -54,12 +51,12 @@ dd if=/dev/zero of=fat32.disk bs=256k count=1
 
 Format the disk with FAT32:
 mkfs.fat -F 32 -f 2 -S 512 -s 1 -R 32 fat32.disk
-
+<img src="images/initializeDisk" alt="Alt Text" width="300" height="200">
 
 To use the FAT32 disk as if it were on your computer's file system mount it to a point
 ```mount fat32.disk /mnt/disk``` and when you are done unmount ```umount fat32.disk```.
 
-
+<img src="images/editDisk.png" alt="Alt Text" width="300" height="200">
 
 
 
